@@ -219,6 +219,7 @@ jobs:
           cd target/${{ matrix.target }}/release
           strip starship.exe
           7z a ../../../${{ matrix.name }} starship.exe
+          ((openssl dgst -sha256 starship.exe) -split " ")[1] | Tee-Object -FilePath ../../../${{ matrix.name }}.shasum
           cd -
 
       - name: Prepare build artifacts [-nix]
@@ -227,6 +228,7 @@ jobs:
           cd target/${{ matrix.target }}/release
           strip starship
           tar czvf ../../../${{ matrix.name }} starship
+          openssl dgst -sha256 starship | awk '{print $2}' >> ../../../${{ matrix.name }}.shasum
           cd -
 
       - name: Generate release notes
