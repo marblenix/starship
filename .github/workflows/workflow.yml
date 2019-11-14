@@ -62,8 +62,8 @@ jobs:
         run: |
           cd target/${{ matrix.target }}/release
           strip starship.exe
-          ((openssl dgst -sha256 starship.exe) -split " ")[1] | Tee-Object -FilePath shasum
-          7z a ../../../${{ matrix.name }} starship.exe shasum
+          openssl dgst -sha256 starship.exe | Tee-Object -FilePath ../../../shasum
+          7z a ../../../${{ matrix.name }} starship.exe ../../../shasum
           cd -
 
       - name: Prepare build artifacts [-nix]
@@ -71,8 +71,8 @@ jobs:
         run: |
           cd target/${{ matrix.target }}/release
           strip starship
-          openssl dgst -sha256 starship | awk '{print $2}' >> shasum
-          tar czvf ../../../${{ matrix.name }} starship shasum
+          openssl dgst -sha256 starship >> ../../../shasum
+          tar czvf ../../../${{ matrix.name }} starship ../../../shasum
           cd -
 
       - name: Generate release notes
@@ -86,7 +86,9 @@ jobs:
       - name: Create GitHub release ${{ matrix.target }}
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ matrix.name }}
+          files: |
+            ${{ matrix.name }}
+            shasum
           body_path: RELEASE.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
