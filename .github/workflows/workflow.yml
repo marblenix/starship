@@ -107,6 +107,7 @@ jobs:
     needs: github_build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
 
       - name: Download shasums from github_build
         uses: actions/download-artifact@v1
