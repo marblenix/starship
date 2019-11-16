@@ -71,7 +71,7 @@ jobs:
         run: |
           cd target/${{ matrix.target }}/release
           strip starship.exe
-          Write-Host "${{ matrix.target }} $(openssl dgst -sha256 starship.exe)" | Tee-Object -Append -FilePath ..\..\..\${{ matrix.target }}-shasum
+          Tee-Object -InputObject "${{ matrix.target }} $(openssl dgst -sha256 .\starship.exe)" -FilePath ..\..\..\${{ matrix.target }}-shasum
           7z a ../../../${{ matrix.name }} starship.exe
           cd -
           dir
