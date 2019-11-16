@@ -218,18 +218,18 @@ jobs:
         run: |
           cd target/${{ matrix.target }}/release
           strip starship.exe
-          Tee-Object -InputObject "${{ matrix.target }} $(openssl dgst -sha256 starship.exe)" -FilePath ..\..\..\${{ matrix.target }}-shasum
           7z a ../../../${{ matrix.name }} starship.exe
           cd -
+          Tee-Object -InputObject "($(openssl dgst -sha256 ${{ matrix.name }}) -Split " ")[1] ${{ matrix.name }}" -FilePath ${{ matrix.name }}.sha256
 
       - name: Prepare build artifacts [-nix]
         if: matrix.os != 'windows-latest'
         run: |
           cd target/${{ matrix.target }}/release
           strip starship
-          echo "${{ matrix.target }} $(openssl dgst -sha256 starship)" >> ../../../${{ matrix.target }}-shasum
           tar czvf ../../../${{ matrix.name }} starship
           cd -
+          echo "$(openssl dgst -sha256 ${{ matrix.name }} | awk '{print $2}')" >> ../../../${{ matrix.name }}-shasum
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v1
@@ -240,8 +240,8 @@ jobs:
       - name: Upload shasum artifact
         uses: actions/upload-artifact@v1
         with:
-          name: ${{ matrix.target }}-shasum
-          path: ${{ matrix.target }}-shasum
+          name: ${{ matrix.name }}-shasum
+          path: ${{ matrix.name }}-shasum
 
   # Create GitHub release with Rust build targets and release notes
   github_release:
