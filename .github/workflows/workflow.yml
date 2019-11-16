@@ -112,18 +112,22 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: x86_64-unknown-linux-gnu-shasum
+          path: .
       - name: Download shasums from github_build
         uses: actions/download-artifact@v1
         with:
           name: x86_64-unknown-linux-musl-shasum
+          path: .
       - name: Download shasums from github_build
         uses: actions/download-artifact@v1
         with:
           name: x86_64-apple-darwin-shasum
+          path: .
       - name: Download shasums from github_build
         uses: actions/download-artifact@v1
         with:
           name: x86_64-pc-windows-msvc-shasum
+          path: .
 
       - shell: bash
         run: |
