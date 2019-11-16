@@ -218,7 +218,6 @@ jobs:
         run: |
           strip target/${{ matrix.target }}/release/starship.exe
           7z a ${{ matrix.name }} target/${{ matrix.target }}/release/starship.exe
-          Tee-Object -InputObject "($(openssl dgst -sha256 ${{ matrix.name }}) -Split " ")[1] ${{ matrix.name }}" -FilePath ${{ matrix.name }}.sha256
           Write-Output ($(openssl dgst -sha256 ${{ matrix.name }}) -Split ' ')[1] " " ${{ matrix.name }} | Out-File -encoding ascii ${{ matrix.name }}.sha256 -NoNewline
 
       - name: Prepare build artifacts [-nix]
@@ -226,7 +225,7 @@ jobs:
         run: |
           strip target/${{ matrix.target }}/release/starship
           tar czvf ${{ matrix.name }} target/${{ matrix.target }}/release/starship
-          echo "$(openssl dgst -sha256 ${{ matrix.name }} | awk '{print $2}')" >> ../../../${{ matrix.name }}.sha256
+          echo "$(openssl dgst -sha256 ${{ matrix.name }} | awk '{print $2}')" >> ${{ matrix.name }}.sha256
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v1
