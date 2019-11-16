@@ -10,8 +10,8 @@ on:
       - "**.md"
 
 jobs:
-  # Create GitHub release with Rust build targets and release notes
-  github_release:
+  # Build sources for every OS
+  github_build:
     if: startsWith(github.ref, 'refs/tags/v')
     name: Create GitHub Release
     strategy:
@@ -51,18 +51,30 @@ jobs:
         if: matrix.target == 'x86_64-unknown-linux-musl'
         run: sudo apt-get install -y musl-tools
 
-      - name: Build target
+      - name: Build target (cache only)
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --release --target ${{ matrix.target }}
+          key: ${{ runner.OS }}-build-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.OS }}-build-${{ env.cache-name }}-
+            ${{ runner.OS }}-build-
+            ${{ runner.OS }}-
+
+      - name: Build target (real)
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --target ${{ matrix.target }}
+
 
       - name: Prepare build artifacts [Windows]
         if: matrix.os == 'windows-latest'
         run: |
           cd target/${{ matrix.target }}/release
           strip starship.exe
-          Write-Host "$(openssl dgst -sha256 .gitconfig) ${{ matrix.target }}" | Tee-Object -Append -FilePath ../../../shasum
+          Write-Host "${{ matrix.target }} $(openssl dgst -sha256 starship.exe)" | Tee-Object -Append -FilePath ../../../${{ matrix.target }}-shasum
           7z a ../../../${{ matrix.name }} starship.exe
           cd -
 
@@ -71,12 +83,48 @@ jobs:
         run: |
           cd target/${{ matrix.target }}/release
           strip starship
-          echo "$(openssl dgst -sha256 starship) ${{ matrix.target }}" >> ../../../shasum
+          echo "${{ matrix.target }} $(openssl dgst -sha256 starship)" >> ../../../${{ matrix.target }}-shasum
           tar czvf ../../../${{ matrix.name }} starship
           cd -
 
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ matrix.name }}
+
+      - name: Upload shasum artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: ${{ matrix.target }}-shasum
+          path: ${{ matrix.target }}-shasum
+
+  # Create GitHub release with Rust build targets and release notes
+  github_release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    name: Create GitHub Release
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - x86_64-apple-darwin
+          - x86_64-pc-windows-msvc
+    needs: github_build
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Download shasums from github_build
+        uses: actions/download-artifact@v1
+        with:
+          name: ${{ matrix.target }}-shasum
+
+      - shell: bash
+        run: |
+          cat ${{ matrix.target }}-shasum >> shasum
+
       - name: Generate release notes
-        if: matrix.os == 'ubuntu-latest'
         run: |
           # Temporary fix for https://github.com/actions/setup-go/issues/14
           export PATH=$PATH:$(go env GOPATH)/bin
