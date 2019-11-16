@@ -51,18 +51,17 @@ jobs:
         if: matrix.target == 'x86_64-unknown-linux-musl'
         run: sudo apt-get install -y musl-tools
 
-      - name: Build target (cache only)
-        uses: actions-rs/cargo@v1
+      - name: Pull previous build from cache
+        uses: actions/cache@v1
         with:
-          command: build
-          args: --release --target ${{ matrix.target }}
+          path: target
           key: ${{ runner.OS }}-build-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.OS }}-build-${{ env.cache-name }}-
             ${{ runner.OS }}-build-
             ${{ runner.OS }}-
 
-      - name: Build target (real)
+      - name: Build target
         uses: actions-rs/cargo@v1
         with:
           command: build
