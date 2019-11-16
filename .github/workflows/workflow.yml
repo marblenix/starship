@@ -57,9 +57,7 @@ jobs:
           path: target
           key: ${{ runner.OS }}-build-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.OS }}-build-${{ env.cache-name }}-
-            ${{ runner.OS }}-build-
-            ${{ runner.OS }}-
+            ${{ runner.OS }}-build-${{ env.cache-name }}
 
       - name: Build target
         uses: actions-rs/cargo@v1
