@@ -74,9 +74,10 @@ jobs:
         run: |
           cd target/${{ matrix.target }}/release
           strip starship.exe
-          Write-Host "${{ matrix.target }} $(openssl dgst -sha256 starship.exe)" | Tee-Object -Append -FilePath ../../../${{ matrix.target }}-shasum
+          Write-Host "${{ matrix.target }} $(openssl dgst -sha256 starship.exe)" | Tee-Object -Append -FilePath ..\..\..\${{ matrix.target }}-shasum
           7z a ../../../${{ matrix.name }} starship.exe
           cd -
+          dir
 
       - name: Prepare build artifacts [-nix]
         if: matrix.os != 'windows-latest'
