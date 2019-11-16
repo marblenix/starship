@@ -251,22 +251,22 @@ jobs:
       - name: Download shasums from github_build
         uses: actions/download-artifact@v1
         with:
-          name: x86_64-unknown-linux-gnu.sha256
+          name: starship-x86_64-unknown-linux-gnu.tar.gz
           path: .
       - name: Download shasums from github_build
         uses: actions/download-artifact@v1
         with:
-          name: x86_64-unknown-linux-musl.sha256
+          name: starship-x86_64-unknown-linux-musl.tar.gz
           path: .
       - name: Download shasums from github_build
         uses: actions/download-artifact@v1
         with:
-          name: x86_64-apple-darwin.sha256
+          name: starship-x86_64-apple-darwin.tar.gz
           path: .
       - name: Download shasums from github_build
         uses: actions/download-artifact@v1
         with:
-          name: x86_64-pc-windows-msvc.sha256
+          name: starship-x86_64-pc-windows-msvc.zip
           path: .
       - name: Download releases from github_build
         uses: actions/download-artifact@v1
