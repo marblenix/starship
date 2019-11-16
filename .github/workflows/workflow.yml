@@ -226,7 +226,6 @@ jobs:
           strip target/${{ matrix.target }}/release/starship
           tar czvf ${{ matrix.name }} target/${{ matrix.target }}/release/starship
           echo "$(openssl dgst -sha256 ${{ matrix.name }} | awk '{print $2}')" >> ../../../${{ matrix.name }}.sha256
-          cd -
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v1
