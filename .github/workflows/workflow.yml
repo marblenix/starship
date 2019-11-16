@@ -216,22 +216,17 @@ jobs:
       - name: Prepare build artifacts [Windows]
         if: matrix.os == 'windows-latest'
         run: |
-          cd target/${{ matrix.target }}/release
-          strip starship.exe
-          Tee-Object -InputObject "${{ matrix.target }} $(openssl dgst -sha256 starship.exe)" -FilePath ..\..\..\${{ matrix.target }}-shasum
-          7z a ../../../${{ matrix.name }} starship.exe
-          cd -
+          strip target/${{ matrix.target }}/release/starship.exe
+          7z a ${{ matrix.name }} target/${{ matrix.target }}/release/starship.exe
           Tee-Object -InputObject "($(openssl dgst -sha256 ${{ matrix.name }}) -Split " ")[1] ${{ matrix.name }}" -FilePath ${{ matrix.name }}.sha256
 
       - name: Prepare build artifacts [-nix]
         if: matrix.os != 'windows-latest'
         run: |
-          cd target/${{ matrix.target }}/release
-          strip starship
-          echo "${{ matrix.target }} $(openssl dgst -sha256 starship)" >> ../../../${{ matrix.target }}-shasum
-          tar czvf ../../../${{ matrix.name }} starship
+          strip target/${{ matrix.target }}/release/starship
+          tar czvf ${{ matrix.name }} target/${{ matrix.target }}/release/starship
+          echo "$(openssl dgst -sha256 ${{ matrix.name }} | awk '{print $2}')" >> ../../../${{ matrix.name }}.sha256
           cd -
-          echo "$(openssl dgst -sha256 ${{ matrix.name }} | awk '{print $2}')" >> ../../../${{ matrix.name }}-shasum
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v1
@@ -242,8 +237,8 @@ jobs:
       - name: Upload shasum artifact
         uses: actions/upload-artifact@v1
         with:
-          name: ${{ matrix.name }}-shasum
-          path: ${{ matrix.name }}-shasum
+          name: ${{ matrix.name }}.sha256
+          path: ${{ matrix.name }}.sha256
 
   # Create GitHub release with Rust build targets and release notes
   github_release:
@@ -257,22 +252,22 @@ jobs:
       - name: Download shasums from github_build
         uses: actions/download-artifact@v1
         with:
-          name: x86_64-unknown-linux-gnu-shasum
+          name: x86_64-unknown-linux-gnu.sha256
           path: .
       - name: Download shasums from github_build
         uses: actions/download-artifact@v1
         with:
-          name: x86_64-unknown-linux-musl-shasum
+          name: x86_64-unknown-linux-musl.sha256
           path: .
       - name: Download shasums from github_build
         uses: actions/download-artifact@v1
         with:
-          name: x86_64-apple-darwin-shasum
+          name: x86_64-apple-darwin.sha256
           path: .
       - name: Download shasums from github_build
         uses: actions/download-artifact@v1
         with:
-          name: x86_64-pc-windows-msvc-shasum
+          name: x86_64-pc-windows-msvc.sha256
           path: .
       - name: Download releases from github_build
         uses: actions/download-artifact@v1
@@ -297,7 +292,7 @@ jobs:
 
       - shell: bash
         run: |
-          cat *-shasum >> shasum
+          cat *.sha256 >> CHECKSUMS.sha256
 
       - name: Generate release notes
         run: |
@@ -314,7 +309,7 @@ jobs:
             starship-x86_64-unknown-linux-musl.tar.gz
             starship-x86_64-apple-darwin.tar.gz
             starship-x86_64-pc-windows-msvc.zip
-            shasum
+            CHECKSUMS.sha256
           body_path: RELEASE.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
