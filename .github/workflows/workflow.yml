@@ -289,8 +289,15 @@ jobs:
           name: starship-x86_64-pc-windows-msvc.zip
           path: .
 
+      - name: Install dos2unix to fix windows checksum
+        run: sudo apt-get install -y dos2unix
+
       - shell: bash
         run: |
+          # Fix newline issue in windows checksum file and combine all files together
+          dos2unix starship-x86_64-pc-windows-msvc.zip.sha256
+          cat starship-x86_64-pc-windows-msvc.zip.sha256 | xargs > tmp
+          mv tmp starship-x86_64-pc-windows-msvc.zip.sha256
           cat *.sha256 >> CHECKSUMS.sha256
 
       - name: Generate release notes
